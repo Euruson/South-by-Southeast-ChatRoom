@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8"><meta name="viewport" content=" initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<meta name="format-detection" content="telephone=no">
+<link rel="shortcut icon" href="http://s.techbrood.com/themes/techbrood/image/favicon.ico" type="image/x-icon" />
+<title>东南偏南·聊天屋</title>
+<meta name="description" content="-" />
+<script src="http://wow.techbrood.com/libs/jquery/jquery-1.11.1.min.js"></script>
+<link rel='stylesheet prefetch' href='/css/reset.css'>
+<link rel='stylesheet prefetch' href='https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css'>
+
+
+<script type="text/javascript">
+var id_number=0;
+var message_str="";
+var to_who="";
+var user_name="";
+var status_str="";
+var color_name="black";
+
+var my_id_number=0;
+var my_user_name="";
+var my_color_name="black";
+
+function parseJson(w)
+    {
+        return eval("("+w+")");
+    }
+
+function setCursorPosition(elem, index) {
+    var val = elem.value
+    var len = val.length
+
+    // 超过文本长度直接返回
+    if (len < index) return
+    setTimeout(function() {
+        elem.focus()
+        if (elem.setSelectionRange) { // 标准浏览器
+            elem.setSelectionRange(index, index)    
+        } else { // IE9-
+            var range = elem.createTextRange()
+            range.moveStart("character", -len)
+            range.moveEnd("character", -len)
+            range.moveStart("character", index)
+            range.moveEnd("character", 0)
+            range.select()
+        }
+    }, 10)
+}
+
+ws = new WebSocket('ws://{{ipAddress}}:{{lp}}/soc');
+ws.onmessage = function(event) {
+    var recvStr=event.data;
+    if(recvStr.indexOf('stamp')!=-1)
+    {
+        var jsondata = parseJson(recvStr);
+        $('#stamp').text("Time stamp:"+jsondata.stamp);
+
+
+        
+    }
+    else
+    {
+
+        var j=parseJson(recvStr);
+        message_str=j.message;
+        to_who=j.toWho;
+        id_number=j.id;
+        user_name=j.userName;
+        status_str=j.status;
+        color_name=j.color;
+ 
+        if(status_str=="varify")
+        {
+            my_id_number=id_number;
+            my_user_name=user_name;
+            my_color_name=color_name;
+            if(my_user_name.indexOf("Anonymous")==0&&message_str!="repeat")
+                alert("临时昵称:"+user_name+"\n请修改自己的昵称")
+            else
+            {
+                if(message_str=="repeat")
+                    alert("这个昵称已被他人注册，请更换！");
+                else
+                    alert("昵称: "+my_user_name);
+            }
+
+            $('#userNameInputId').val(my_user_name);
+
+        }
+        else if(status_str=="chat")
+        {
+            var myDate = new Date();
+            hour=myDate.getHours();
+            minute=myDate.getMinutes();
+            timeStr=hour+":"+minute;
+            if(user_name==my_user_name)
+            {
+            appendMessageContent="<li class='clearfix'><div class='message-data align-right'><span class='message-data-time'>"+timeStr+", Today</span><span class='message-data-name'>&nbsp;"+user_name+" </span> <i class='fa fa-circle me'></i></div><div class='message other-message float-right' id='test'>"+message_str+"</div></li>";
+             }
+            else
+            {
+                appendMessageContent="<li><div class='message-data'><span class='message-data-name'><i class='fa fa-circle online'></i>"+user_name+"</span><span class='message-data-time'>"+timeStr+", Today</span> </div><div class='message my-message'>"+message_str+"</div></li>";
+            }
+            $('#message').append(appendMessageContent);
+            $("#message-box").scrollTop($("#message-box").scrollTop()+500);
+        }
+        else if(status_str=="join")
+        {
+                appendMessageContent="<li class='clearfix' id='"+user_name+"'><img src='{{static_url('user.jpg')}}' width='70' height='70' alt='avatar' /><div class='about'><div class='name'>"+user_name+"</div><div class='status'><i class='fa fa-circle online'></i> online</div></div></li>";
+            $('#join').append(appendMessageContent);
+            //alert('join:  '+appendMessageContent)
+        }
+        else if(status_str=="remove")
+        {
+            $('#'+user_name).remove();
+        }
+        else if(status_str=='updateMember')
+        {
+            $('#join').children().remove();
+            var j=parseJson(message_str);
+            for (var i in j) {
+            appendMessageContent="<li class='clearfix' id='"+i+"'><img src='{{static_url('user.jpg')}}' width='70' height='70' alt='avatar' /><div class='about'><div class='name'>"+i+"</div><div class='status'><i class='fa fa-circle online'></i> online</div></div></li>";
+            $('#join').append(appendMessageContent);
+            } 
+        }
+
+    }
+    };
+
+    function send() { 
+    var data = {
+        'message':$("#input_data").val(),
+        'userName':my_user_name,
+        'id':my_id_number,
+        'toWho':'everyone',
+        'status':'chat',
+        'color':my_color_name
+    };
+    ws.send(JSON.stringify(data));
+    }
+
+
+
+
+
+    function EnterPress(e){   
+    if(e.keyCode == 13)
+    {
+       send();
+       $('#input_data').val("");
+       setCursorPosition(input_data, 0);
+    }
+    }
+
+    function EnterPress2(e)
+    {
+        if(e.keyCode==13)
+        {
+            var data = {
+            'message':'Nothing',
+            'userName':$("#userNameInputId").val(),
+            'id':my_id_number,
+            'toWho':'system',
+            'status':'userNameChange',
+            'color':my_color_name
+            };
+
+        ws.send(JSON.stringify(data));
+        $('#userNameInputId').val("").focus();
+        }
+    }
+    
+
+$(function(){ 
+$("html,body").animate({"scrollTop": "-300px"}, 1000); 
+}); 
+
+$(function(){ 
+ var updateData = {
+        'message':"None",
+        'userName':my_user_name,
+        'id':my_id_number,
+        'toWho':'everyone',
+        'status':'updateMember',
+        'color':my_color_name
+             };
+        //alert("updateMember")
+        ws.send(JSON.stringify(updateData));
+});
+</script>
+
+
+<style>
+@font-face {
+  font-family: 'Lato';
+  font-style: normal;
+  font-weight: 400;
+  src: local('Lato Regular'), local('Lato-Regular'), url(https://fonts.gstatic.com/s/lato/v11/9k-RPmcnxYEPm8CNFsH2gg.woff) format('woff');
+}
+@font-face {
+  font-family: 'Lato';
+  font-style: normal;
+  font-weight: 700;
+  src: local('Lato Bold'), local('Lato-Bold'), url(https://fonts.gstatic.com/s/lato/v11/wkfQbvfT_02e2IWO3yYueQ.woff) format('woff');
+}
+
+*,
+*:before,
+*:after {
+    box-sizing: border-box;
+}
+body {
+    background: #c5ddeb;
+    font: 14px/20px "Lato", Arial, sans-serif;
+    padding: 40px 0;
+    color: white;
+}
+.container {
+    margin: 0 auto;
+    width: 750px;
+    background: #444753;
+    border-radius: 5px;
+}
+.people-list {
+    width: 260px;
+    float: left;
+}
+.people-list .search {
+    padding: 20px;
+}
+.people-list input {
+    border-radius: 3px;
+    border: none;
+    padding: 14px;
+    color: white;
+    background: #6a6c75;
+    width: 88%;
+    font-size: 14px;
+}
+.people-list .fa-search {
+    position: relative;
+    left: -25px;
+}
+.people-list ul {
+    padding: 20px;
+    height: 770px;
+}
+.people-list ul li {
+    padding-bottom: 20px;
+}
+.people-list img {
+    float: left;
+}
+.people-list .about {
+    float: left;
+    margin-top: 8px;
+    width: 200px;
+}
+.people-list .about {
+    padding-left: 8px;
+}
+.people-list .status {
+    color: #92959e;
+}
+.chat {
+    width: 490px;
+    float: left;
+    background: #f2f5f8;
+    border-top-right-radius: 5px;
+    border-bottom-right-radius: 5px;
+    color: #434651;
+}
+.chat .chat-header {
+    padding: 20px;
+    border-bottom: 2px solid white;
+}
+.chat .chat-header img {
+    float: left;
+}
+.chat .chat-header .chat-about {
+    float: left;
+    padding-left: 10px;
+    margin-top: 6px;
+}
+.chat .chat-header .chat-with {
+    font-weight: bold;
+    font-size: 16px;
+}
+.chat .chat-header .chat-num-messages {
+    color: #92959e;
+}
+.chat .chat-header .fa-star {
+    float: right;
+    color: #d8dadf;
+    font-size: 20px;
+    margin-top: 12px;
+}
+.chat .chat-history {
+    padding: 30px 30px 20px;
+    border-bottom: 2px solid white;
+    overflow-y: scroll;
+    height: 575px;
+
+}
+.chat .chat-history .message-data {
+    margin-bottom: 15px;
+}
+.chat .chat-history .message-data-time {
+    color: #a8aab1;
+    padding-left: 6px;
+}
+.chat .chat-history .message {
+    color: white;
+    padding: 18px 20px;
+    line-height: 26px;
+    font-size: 16px;
+    border-radius: 7px;
+    margin-bottom: 30px;
+    width: 90%;
+    position: relative;
+}
+.chat .chat-history .message:after {
+    bottom: 100%;
+    left: 7%;
+    border: solid transparent;
+    content: " ";
+    height: 0;
+    width: 0;
+    position: absolute;
+    pointer-events: none;
+    border-bottom-color: #86bb71;
+    border-width: 10px;
+    margin-left: -10px;
+}
+.chat .chat-history .my-message {
+    background: #86bb71;
+}
+.chat .chat-history .other-message {
+    background: #94c2ed;
+}
+.chat .chat-history .other-message:after {
+    border-bottom-color: #94c2ed;
+    left: 93%;
+}
+.chat .chat-message {
+    padding: 30px;
+}
+.chat .chat-message textarea {
+    width: 100%;
+    border: none;
+    padding: 10px 20px;
+    font: 14px/22px "Lato", Arial, sans-serif;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    resize: none;
+}
+.chat .chat-message .fa-file-o,
+.chat .chat-message .fa-file-image-o {
+    font-size: 16px;
+    color: gray;
+    cursor: pointer;
+}
+.chat .chat-message button {
+    float: right;
+    color: #94c2ed;
+    font-size: 16px;
+    text-transform: uppercase;
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
+    background: #f2f5f8;
+}
+.chat .chat-message button:hover {
+    color: #75b1e8;
+}
+.online,
+.offline,
+.me {
+    margin-right: 3px;
+    font-size: 10px;
+}
+.online {
+    color: #86bb71;
+}
+.offline {
+    color: #e38968;
+}
+.me {
+    color: #94c2ed;
+}
+.align-left {
+    text-align: left;
+}
+.align-right {
+    text-align: right;
+}
+.float-right {
+    float: right;
+}
+html {
+-ms-overflow-style:none;
+overflow:-moz-scrollbars-none;
+}
+
+html::-webkit-scrollbar{width:0px}
+
+.clearfix:after {
+    visibility: hidden;
+    display: block;
+    font-size: 0;
+    content: " ";
+    clear: both;
+    height: 0;
+
+}
+</style>
+</head>
+<body>
+<div class="container clearfix">
+    <div class="people-list" id="people-list">
+        <div class="search">
+            <input type="text" placeholder="search" />
+            <i class="fa fa-search"></i>
+        </div>
+        <div class="chat-history" style="height:700px;width:600px;overflow:auto;">
+        <ul id="join">
+        
+            <li class="clearfix">
+                <img src="{{static_url('user.jpg')}}" width="70" height="70" alt="avatar" />
+                <div class="about">
+                    <div class="name">Admin Robot</div>
+                    <div class="status">
+                        <i class="fa fa-circle online"></i> online
+                    </div>
+                </div>
+            </li>
+
+        </ul>
+        </div>
+    </div>
+
+    <div class="chat">
+        <div class="chat-header clearfix">
+            <img src="{{static_url('user.jpg')}}" width="40" height="40" alt="avatar" />
+
+            <div class="chat-about">
+                <div class="chat-with">User name:<input type="text" id="userNameInputId" onkeypress="EnterPress2(event)" /> </div>
+                <div class="chat-num-messages" id="stamp"> </div>
+            </div>
+            <i class="fa fa-star"></i>
+        </div>
+        <!-- end chat-header -->
+
+        <div class="chat-history" id="message-box">
+            <ul  id="message" style="list-style-type:none">
+                
+             </ul>
+
+        </div>
+        <!-- end chat-history -->
+
+        <div class="chat-message clearfix">
+            <textarea name="message-to-send" id="input_data" placeholder="Type your message" rows="3" onkeypress="EnterPress(event)"></textarea>
+            </div>
+
+
+</body></html>
