@@ -16,8 +16,8 @@ sys.setdefaultencoding('utf-8')
 
 themeColor=['red','blue','green','black','gray','yellow']
 count=0
-listenPort=8080
-address=raw_input("Please enter this raspberry pi`s ip address:")
+listenPort=80
+address="www.shadowwalker.cn"
 sessions={}
 log=open("log.txt","a")
 def getTime():
