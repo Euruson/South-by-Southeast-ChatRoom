@@ -1,0 +1,63 @@
+﻿<HTML>
+    <HEAD>
+        <META charset="utf-8">
+        <link rel="shortcut icon" href="http://s.techbrood.com/themes/techbrood/image/favicon.ico" type="image/x-icon" />
+        <TITLE>登陆 东南偏南</TITLE>
+        <LINK rel="stylesheet" href="../static/css/mystyle.css">
+         <SCRIPT src="../static/js/login.js"> </SCRIPT>   
+    </HEAD>
+    <BODY class="Loginbody">
+        <DIV id="Login"     text-align: center;>
+        <!--<IMG class="logo"  src="res/images/logo.png">-->
+        <FORM name="frmLogin" method="post" action="login.action">
+            <TABLE style="margin:auto;">
+                <CAPTION><span style="font-weight: bold;font-size:15px;">东南偏南</span></CAPTION>
+                <CAPTION>登陆到聊天室</CAPTION>
+                <TR>
+                    <TD colspan="2"><input id="txtName" name="txtName" type="text" placeholder="用户名" onblur="check_txtName()" onfocus="focus_txtName()"></TD>
+                </TR>
+                <TR>
+                    <TD><P class="Waringtxtsty" id="accWarning" hidden>用户名不能为空。</p></TD>
+                </TR>
+
+                <TR>
+                    <TD colspan="2"><INPUT id="txtPwd" name="txtPwd" type="password" placeholder="密码" onblur="check_txtPwd()" onfocus="focus_txtPwd()"></TD>
+                </TR>
+                <TR>
+                    <TD><P class="Waringtxtsty" id="pwdWarning" hidden>密码不能小于6位。</p></TD>
+                </TR>
+
+                <TR>
+                    <TD><input id="iptIdCode" class="iptIdCode" name="idtyCode" type="text" placeholder="验证码" onblur="check_idtyCode()" onfocus="focus_idtyCode()"></TD>
+                    <TD><IMG src="res/images/idtyimg.jpg"></TD>
+                </TR>
+                <TR>
+                    <TD><P class="Waringtxtsty" id="codeWarning" hidden>请输入验证码。</p></TD>
+                </TR>
+                
+                <TR>
+                    <TD><INPUT class="remPwdcheboxSty" id="remPwdchebox" name="remPwdchebox" type="checkbox" onblur="checked_remPwdchebox()" onfocus="remPwdchebox()">
+                        <LABEL class="remPwdcheboxtextSty" for="remPwdchebox">保持登录状态</LABEL>
+                    </TD>
+                    <TD align="right"><A class="fogPwdlink" href="register.html">没有账号？注册</A></TD>
+                </TR>
+
+                <TR>
+                    <TD colspan="2" align="center">
+                        <!--<P class="Loginpromotion">一旦登录，即表明你同意 <span>步履不停</span> 的 <A href="privacy.html">隐私政策</A> 和 <A href="provision.html">使用条款</A></P>-->
+                    </TD>
+                </TR>
+                
+                <TR>
+                    <TD colspan="2"><INPUT id="login-input" class="btnSubmit" type="submit" value="登陆"/></TD>
+                </TR>
+               <!-- <TR>
+                    <TD colspan="2"><INPUT class="btnRegist" type="button" value="创建账户" onclick="location.href='register.html'"/></TD>
+                </TR>-->
+            </TABLE>
+        </FORM>
+        </DIV>
+        
+        <script type="text/javascript" src="http://www.keleyi.com/keleyi/pmedia/jquery-1.9.1.min.js"></script>
+    </BODY>
+</HTML> 

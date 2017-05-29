@@ -1,0 +1,94 @@
+<HTML>
+    <HEAD>
+        <META charset="utf-8">
+        <SCRIPT src = "../static/js/regstyle.js">  </SCRIPT>
+        <link rel="shortcut icon" href="http://s.techbrood.com/themes/techbrood/image/favicon.ico" type="image/x-icon" />
+        <TITLE>注册 东南偏南</TITLE>
+        <LINK rel="stylesheet" href="../static/css/mystyle.css">
+    </HEAD>
+    <BODY id="regbody" class="Registerbody" onload="changeBg()">
+        <!--<VIDEO class="Bgvideo" autoplay muted loop style="width: 100%;"><SOURCE src="Log_bg_video.mp4"></VIDEO>-->
+        <DIV id="Register" text-align: center;>
+        <!--<IMG class="logo"  src="res/images/logo.png">-->
+        <FORM name="frmLogin" method="post" action="regist.action">
+            <TABLE style="margin:auto;">
+                <CAPTION><span style="font-weight: bold;font-size:15px;">东南偏南</span></CAPTION>
+                <CAPTION>新伙伴注册</CAPTION>
+                <TR>
+                    <TD colspan="2"><P class="Muststarsty"><INPUT id="txtName" name="txtName" type="text" placeholder="用户名" onblur="checknm()" onfocus="focusnm()"></P></TD>
+                </TR>
+                <TR>
+                    <TD><P class="Waringtxtsty" id="accWarning" hidden>用户名不能为空。</p></TD>
+                </TR>
+
+                <TR>
+                    <TD><P class="Waringillegaltxtsty" id="accillegalWarning" hidden>用户名不能包含非法字符。</p></TD>
+                </TR>
+
+                <TR>
+                    <TD colspan="2"><P class="Muststarsty"><INPUT id="txtPwd" name="txtPwd" type="password" placeholder="密码（不少于6位）" onblur="checkpw()" onfocus="focuspw()"></P></TD>
+                </TR>
+                <TR>
+                    <TD><P class="Waringtxtsty" id="pwdWarning" hidden>密码不能少于6位。</p></TD>
+                </TR>
+
+                <TR>
+                    <TD colspan="2"><P class="Muststarsty"><INPUT id="ctxtPwd" name="ctxtPwd" type="password" placeholder="密码确认" onblur="recheckpw()" onfocus="focusrpw()"></P></TD>
+                </TR>
+                <TR>
+                    <TD><P class="Waringtxtsty" id="cpwdWarning" hidden>两次输入的密码不一致。</p></TD>
+                </TR>
+
+                 <TR>
+                    <TD colspan="2">
+                        <P>
+                            <INPUT class="Radio" type="Radio" name="sex" value="male">男
+                            <INPUT class="Radio" type="Radio" name="sex" value="female">女
+                        </P>
+                    </TD>
+                </TR>
+
+               <!-- <TR>
+                    <TD colspan="2"><INPUT name="txtRname" type="text" placeholder="一句话描述自己，用／隔开，如：自驾／背包客" onblur=""></TD>
+                </TR>-->
+                <TR>
+                    <TD colspan="2"><INPUT name="txtEmail" type="text" placeholder="邮箱" onblur="checkhm()"></TD>
+                </TR>
+                 <TR>
+                    <TD colspan="2">
+                        <DIV class="Styleselect">
+                        <SELECT padding-left="20" name="txtCountry">
+                            <OPTION value="cse">&nbsp计算机科学与工程学院</OPTION>
+                            <OPTION value="ruanjian">&nbsp软件学院</OPTION>
+                            <OPTION value="tumu">&nbsp土木学院</OPTION>
+                            <OPTION value="jiaotong">&nbsp交通学院</OPTION>
+                            <OPTION value="oths">&nbsp其他</OPTION>
+                        </SELECT>
+                        </DIV>
+                    </TD>
+                </TR>
+                   
+
+
+
+                <TR>
+                    <TD><input hiddenid="iptIdCode" class="iptIdCode" name="idtyCode" type="text" placeholder="验证码" onblur="check_idtyCode()" onfocus="focus_idtyCode()"></TD>
+                    <TD><IMG src="res/images/idtyimg.jpg"></TD>
+                </TR>
+                <TR>
+                    <TD><P class="Waringtxtsty" id="codeWarning" hidden>请输入验证码。</P></TD>
+                </TR>
+
+             <!--   <TR>
+                    <TD colspan="2" align="center">
+                        <P class="Loginpromotion">一旦创建账户，即表明你同意 <span>步履不停</span> 的 <A href="privacy.html">隐私政策</A> 和 <A href="provision.html">使用条款</A></P>
+                    </TD>
+                </TR>-->
+
+                <TR>
+                    <TD colspan="2"><INPUT class="btnSubmit" type="submit" value="注册" onclick="submitForm()"></TD>
+                </TR>
+
+        </DIV>
+    </BODY>
+</HTML> 
