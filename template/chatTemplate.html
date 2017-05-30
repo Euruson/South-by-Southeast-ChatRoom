@@ -403,7 +403,24 @@ html {
 -ms-overflow-style:none;
 overflow:-moz-scrollbars-none;
 }
-
+.login{
+   /* position:absolute;*/
+    text-align:right;
+    margin-top:-40px;
+    margin-bottom: 50px;
+    margin-right:20px;
+    font-size:15px;
+}
+a.loginandreg{
+    color: black;
+    
+    text-decoration: none;
+}
+a.loginandreg:hover{
+    color: white;
+    
+    text-decoration: none;
+}
 html::-webkit-scrollbar{width:0px}
 
 .clearfix:after {
@@ -418,7 +435,11 @@ html::-webkit-scrollbar{width:0px}
 </style>
 </head>
 <body>
+    <div class="login">
+        <p ><a class="loginandreg" href="login.html">LOGIN</a> <span style="color:black">&nbsp| &nbsp<span> <a class="loginandreg" href="register.html">REGISTER</a></p>
+    </div>
 <div class="container clearfix">
+   
     <div class="people-list" id="people-list">
         <div class="search">
             <input type="text" placeholder="search" />
