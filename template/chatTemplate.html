@@ -141,10 +141,35 @@ ws.onmessage = function(event) {
     ws.send(JSON.stringify(data));
     }
 
+    function changepage(flag){
+        if(flag==1)
+        {
+           // alert("1111");
+            $("#member").css("border-bottom","none");
+            $("#member").css("opacity","0.75");
+            $("#chatroom").css("border-bottom","solid 2px");
+            $("#chatroom").css("opacity","1");
+            alert("选择聊天室");
+        }
+        else
+        {
+            $("#member").css("border-bottom","solid 2px");
+             $("#member").css("opacity","1");
+            $("#chatroom").css("border-bottom","none");
+            $("#chatroom").css("opacity","0.75");
+            alert("选择成员");
+        }
+    }
 
+    function addroomfun()
+    {
+        alert("增加聊天室函数");
+    }
 
-
-
+    function choseroom(roomid)
+    {
+        alert("选择聊天室");
+    }
     function EnterPress(e){   
     if(e.keyCode == 13)
     {
@@ -227,7 +252,10 @@ body {
     width: 260px;
     float: left;
 }
-.people-list .search {
+.selectpage{
+    height: 40px;
+}
+.people-list .search{
     padding: 20px;
 }
 .people-list input {
@@ -403,9 +431,42 @@ html {
 -ms-overflow-style:none;
 overflow:-moz-scrollbars-none;
 }
-
+.login{
+   /* position:absolute;*/
+    text-align:right;
+    margin-top:-40px;
+    margin-bottom: 50px;
+    margin-right:20px;
+    font-size:15px;
+}
+a.loginandreg{
+    color: black;
+    
+    text-decoration: none;
+}
+a.loginandreg:hover{
+    color: white;
+    
+    text-decoration: none;
+}
 html::-webkit-scrollbar{width:0px}
-
+.clearfix{
+    list-style-type:none;
+}
+.addroom{
+    list-style-type:none;
+    margin-left: 35px;
+    font-size: 15px;
+    opacity: 0.75;
+    
+}
+.addroom:hover{
+    cursor: pointer;
+    opacity: 1;
+}
+.about:hover{
+    cursor: pointer;
+}
 .clearfix:after {
     visibility: hidden;
     display: block;
@@ -413,26 +474,65 @@ html::-webkit-scrollbar{width:0px}
     content: " ";
     clear: both;
     height: 0;
+    
 
+}
+.selectitem:hover{
+    cursor: pointer;
+}
+.selectitem{
+    font-size:15px;
+    height:44px;
+    width:100px;
+    text-align: center;
+}
+#member{
+    border-bottom: solid 2px;
+}
+#chatroom{
+    opacity: 0.75;
 }
 </style>
 </head>
 <body>
+    <div class="login">
+        <p ><a class="loginandreg" href="login.html">LOGIN</a> <span style="color:black">&nbsp| &nbsp<span> <a class="loginandreg" href="register.html">REGISTER</a></p>
+    </div>
 <div class="container clearfix">
+   
     <div class="people-list" id="people-list">
+        <div class="selectpage">
+            <TABLE style="margin:auto;top:10px;">
+                <TR>
+                    <TD class="selectitem" id="chatroom" onclick="changepage(1)">聊天室</TD>
+                    <TD class="selectitem" id="member" onclick="changepage(2)">成员</TD>
+                </TR>
+            </TABLE>
+        </div>
         <div class="search">
             <input type="text" placeholder="search" />
             <i class="fa fa-search"></i>
         </div>
-        <div class="chat-history" style="height:700px;width:600px;overflow:auto;">
+        <div class="chat-history" style="height:690px;width:600px;overflow:auto;">
         <ul id="join">
-        
+            <li class="addroom" onclick="addroomfun()">
+                + &nbsp 创建新的聊天室
+            </li> 
             <li class="clearfix">
-                <img src="{{static_url('user.jpg')}}" width="70" height="70" alt="avatar" />
+                <img src="../static/images/user.png" width="70" height="70" alt="avatar" />
                 <div class="about">
                     <div class="name">Admin Robot</div>
                     <div class="status">
                         <i class="fa fa-circle online"></i> online
+                    </div>
+                </div>
+            </li>
+            <li class="clearfix" onclick="choseroom(1)">
+                <img src="../static/images/chatroom.png" width="50" height="50" alt="avatar" />
+                <div class="about" style="margin-top:0px;">
+                    <div class="name">ChatRoom 1</div>
+                    <div class="status" style="margin-top:8px;">
+                       <image src="../static/images/num.png">&nbsp11
                     </div>
                 </div>
             </li>
@@ -443,7 +543,7 @@ html::-webkit-scrollbar{width:0px}
 
     <div class="chat">
         <div class="chat-header clearfix">
-            <img src="{{static_url('user.jpg')}}" width="40" height="40" alt="avatar" />
+            <img src="../static/images/user.png" width="40" height="40" alt="avatar" />
 
             <div class="chat-about">
                 <div class="chat-with">User name:<input type="text" id="userNameInputId" onkeypress="EnterPress2(event)" /> </div>
