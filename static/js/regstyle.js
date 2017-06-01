@@ -88,7 +88,7 @@ function checkhm(){
 
 function submitForm(){
 	if(checknm()==true&&checkpw()==true&&recheckpw()==true){
-		if(confirm('确认提交吗？')){
+		if(confirm('请查收注册确认邮件！')){
 			// this.form.action="UserReview.asp?action=delall" //设置处理程序
 			this.form.submit(); //提交表单
 		}

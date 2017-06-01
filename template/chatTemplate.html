@@ -7,7 +7,7 @@
 <title>东南偏南·聊天屋</title>
 <meta name="description" content="-" />
 <script src="http://wow.techbrood.com/libs/jquery/jquery-1.11.1.min.js"></script>
-<link rel='stylesheet prefetch' href='/css/reset.css'>
+<link rel='stylesheet prefetch' href='/static/css/reset.css'>
 <link rel='stylesheet prefetch' href='https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css'>
 
 
@@ -119,15 +119,28 @@ ws.onmessage = function(event) {
         else if(status_str=='updateMember')
         {
             $('#join').children().remove();
+            //
+            appendMessageContent='<li class="addroom" onclick="addroomfun()">+ &nbsp; 创建新的聊天室</li> <li class="clearfix" onclick="choseroom(1)"><img src="/static/images/chatroom.png" width="50" height="50" alt="avatar" /><div class="about" style="margin-top:0px;"><div class="name">ChatRoom 1</div><div class="status" style="margin-top:8px;"><image src="/static/images/num.png">&nbsp1;</div></div></li>'
+            $('#join').append(appendMessageContent);
+
+            ///
             var j=parseJson(message_str);
             for (var i in j) {
             appendMessageContent="<li class='clearfix' id='"+i+"'><img src='{{static_url('user.jpg')}}' width='70' height='70' alt='avatar' /><div class='about'><div class='name'>"+i+"</div><div class='status'><i class='fa fa-circle online'></i> online</div></div></li>";
             $('#join').append(appendMessageContent);
+
             } 
+        }
+        else if(status_str=="addroom")
+        {
+           appendMessageContent="<li class='addroom' onclick='addroomfun()'>+ &nbsp; 创建新的聊天室</li>" ;
+           $('#join').append(appendMessageContent); 
         }
 
     }
     };
+
+    
 
     function send() { 
     var data = {
@@ -196,7 +209,22 @@ ws.onmessage = function(event) {
         $('#userNameInputId').val("").focus();
         }
     }
-    
+    function clearCookie()
+    {
+        var keys=document.cookie.match(/[^ =;]+(?=\=)/g);
+        if (keys) {
+        for (var i = keys.length; i--;)
+        document.cookie=keys[i]+'=0;expires=' + new Date( 0).toUTCString()
+        }
+        
+    }
+
+    function logout()
+    {
+        clearCookie();
+        alert("登出");
+        window.location.href='/login.html';
+    }
 
 $(function(){ 
 $("html,body").animate({"scrollTop": "-300px"}, 1000); 
@@ -435,7 +463,7 @@ overflow:-moz-scrollbars-none;
    /* position:absolute;*/
     text-align:right;
     margin-top:-40px;
-    margin-bottom: 50px;
+    margin-bottom: 1px;
     margin-right:20px;
     font-size:15px;
 }
@@ -496,7 +524,7 @@ html::-webkit-scrollbar{width:0px}
 </head>
 <body>
     <div class="login">
-        <p ><a class="loginandreg" href="login.html">LOGIN</a> <span style="color:black">&nbsp| &nbsp<span> <a class="loginandreg" href="register.html">REGISTER</a></p>
+        <p ><a class="loginandreg" href="login.html">LOGIN</a> <span style="color:black">&nbsp;| &nbsp;<span> <a class="loginandreg" href="register.html">REGISTER</a> <span style="color:black">&nbsp;| &nbsp;<span> <a class="loginandreg" onclick="logout()">LOGOUT</a></p>
     </div>
 <div class="container clearfix">
    
@@ -514,36 +542,26 @@ html::-webkit-scrollbar{width:0px}
             <i class="fa fa-search"></i>
         </div>
         <div class="chat-history" style="height:690px;width:600px;overflow:auto;">
-        <ul id="join">
+        <ul id="join" >
             <li class="addroom" onclick="addroomfun()">
-                + &nbsp 创建新的聊天室
+                + &nbsp; 创建新的聊天室
             </li> 
-            <li class="clearfix">
-                <img src="../static/images/user.png" width="70" height="70" alt="avatar" />
-                <div class="about">
-                    <div class="name">Admin Robot</div>
-                    <div class="status">
-                        <i class="fa fa-circle online"></i> online
-                    </div>
-                </div>
-            </li>
             <li class="clearfix" onclick="choseroom(1)">
-                <img src="../static/images/chatroom.png" width="50" height="50" alt="avatar" />
+                <img src="/static/images/chatroom.png" width="50" height="50" alt="avatar" />
                 <div class="about" style="margin-top:0px;">
                     <div class="name">ChatRoom 1</div>
                     <div class="status" style="margin-top:8px;">
-                       <image src="../static/images/num.png">&nbsp11
+                       <image src="/static/images/num.png">&nbsp1;
                     </div>
                 </div>
             </li>
-
         </ul>
         </div>
     </div>
 
     <div class="chat">
         <div class="chat-header clearfix">
-            <img src="../static/images/user.png" width="40" height="40" alt="avatar" />
+            <img src="/static/images/user.png" width="40" height="40" alt="avatar" />
 
             <div class="chat-about">
                 <div class="chat-with">User name:<input type="text" id="userNameInputId" onkeypress="EnterPress2(event)" /> </div>
@@ -562,7 +580,7 @@ html::-webkit-scrollbar{width:0px}
         <!-- end chat-history -->
 
         <div class="chat-message clearfix">
-            <textarea name="message-to-send" id="input_data" placeholder="Type your message" rows="3" onkeypress="EnterPress(event)"></textarea>
+            <textarea name="message-to-send" id="input_data" placeholder="Type your message and press enter to send!" rows="3" onkeypress="EnterPress(event)"></textarea>
             </div>
 
 

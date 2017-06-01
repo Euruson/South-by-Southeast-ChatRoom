@@ -19,13 +19,21 @@ $('#join').append(appendMessageContent);
 增加聊天室 其中要传三个参数：roomid，roomname，roomnum 房间id，房间名称，房间中人数
 
 appendMessageContent="<li class='clearfix' onclick='choseroom("+roomid+")'>
-<img src='../static/images/chatroom.png' width='50' height='50' alt='avatar' />
+<img src='/static/images/chatroom.png' width='50' height='50' alt='avatar' />
 <div class='about' style='margin-top:0px;'>
 <div class='name'>"+roomname+"</div>
 <div class='status' style='margin-top:8px;'>
-<image src='../static/images/num.png'>&nbsp"+roomnum+"
+<image src='/static/images/num.png'>&nbsp"+roomnum+"
 </div>
 </div>
 </li>"
 
 $('#join').append(appendMessageContent);
+
+
+*************************补充*********************
+邮件那里需要只识别 东大邮箱
+注册的时候需要判断是否已经注册
+防sql注入攻击，密码hash
+
+
