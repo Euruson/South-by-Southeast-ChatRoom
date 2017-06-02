@@ -17,6 +17,7 @@ import sys
 reload(sys)
 sys.setdefaultencoding('utf-8')
 
+
 themeColor=['red','blue','green','black','gray','yellow']
 count=0
 listenPort=80
@@ -41,6 +42,14 @@ def SessionExsit(uid):
     else:
         print "[-]sessions[{}] doesnt exsit,return False exsit".format(uid)
         return False
+
+def CheckUserRegisted(username):
+    sql=sqlite3.connect("chatroom.db")
+    cur=sql.execute("select id from user where name='{}'".format(username))
+    res=cur.fetchall()
+    if(len(res)!=0):
+        return True
+    return False
 
 class Index(tornado.web.RequestHandler):
     def get(self):
@@ -102,6 +111,7 @@ class LoginHandler(tornado.web.RequestHandler):
             sessions[uid]={}#创建会话变量
             sessions[uid]['username']=username
             sessions[uid]['sessioncount']=0
+            sessions[uid]['chatroom']="mainroom"
             self.redirect("/")
         else:
             cur=sql.execute("select id from user where name='{}' and password='{}' and valid=0".format(username,password))
@@ -122,13 +132,18 @@ class RegisterHandler(tornado.web.RequestHandler):
         txtEmail=self.get_argument('txtEmail')
         txtColege=self.get_argument('txtColege')
         print "[Regist]",username,password,sex,txtEmail,txtColege
+        if(CheckUserRegisted(username)):
+            #已经被人注册了
+            print "[-]username already registed"
+            self.redirect('/register.html?error=1')
+            return
         sql=sqlite3.connect("chatroom.db")
         sql.execute("insert into user (name,password,email,gender,verify,valid) values('{}','{}','{}','{}','{}','{}')".format(username,password,txtEmail,sex,md5.md5(username).hexdigest(),0))
         sql.commit()
         sql.close()
         varifyUrl="http://"+address+"/verify?action="+md5.md5(username).hexdigest()
-        mailword='{}，您好，感谢您的注册，请点击下方的注册确认链接完成注册。\n{}'.format(username,varifyUrl)
-        sendmail.SendMail(txtEmail,"[东南偏南聊天室]请确认您的注册信息",mailword)
+        mailword='{}，welcome，thanks for your registering!Please confirm your regist!\n{}'.format(username,varifyUrl)
+        sendmail.SendMail(txtEmail,"[Chatroom]Confirm regist",mailword)
         self.redirect('/login.html')
 
 def combineInfo(message_="[]",toWho_="everyone",id_=0,userName_="Annormous",status_="chat",color_="black"):
@@ -136,10 +151,10 @@ def combineInfo(message_="[]",toWho_="everyone",id_=0,userName_="Annormous",stat
         return strJ
 
 class SocketHandler(tornado.websocket.WebSocketHandler):
-    clients = set()
+    clients =set()
+    roomContainer=dict()
     global themeColor
     global sessions
-
 
     @staticmethod
     def repeat_user_name(username):
@@ -149,36 +164,63 @@ class SocketHandler(tornado.websocket.WebSocketHandler):
         return False
 
     @staticmethod
-    def send_to_all(message):
-        for c in SocketHandler.clients:
-            c.write_message(message)
+    def send_to_all(message,roomid=""):
+        if(roomid==""):
+            for c in SocketHandler.clients:
+                c.write_message(message)
+        else:
+            for c in SocketHandler.roomContainer[roomid]:
+                c.write_message(message)
 
     @staticmethod
-    def update_member(ss):
-        clientInfo="{"
-        for c in SocketHandler.clients:
-            clientInfo=clientInfo+c.my_user_name+":"+"1,"
-        clientInfo=clientInfo+"}"
-        if(clientInfo[-2]==','):
-            clientInfo=clientInfo[:-2]+"}"
-        dataToSend=combineInfo(message_=clientInfo,status_='updateMember')
-        print "[+]updateMemeber self"
-        ss.write_message(dataToSend)
+    def update_member(ss,roomid=""):
+        if(roomid==""):
+            clientInfo="{"
+            for c in SocketHandler.clients:
+                clientInfo=clientInfo+c.my_user_name+":"+"{},".format(roomid)
+            clientInfo=clientInfo+"}"
+            if(clientInfo[-2]==','):
+                clientInfo=clientInfo[:-2]+"}"
+            dataToSend=combineInfo(message_=clientInfo,status_='updateMember')
+            print "[+]updateMemeber self"
+            ss.write_message(dataToSend)
+        else:
+            clientInfo="{"
+            for c in SocketHandler.roomContainer[roomid]:
+                clientInfo=clientInfo+c.my_user_name+":"+"1,"
+            clientInfo=clientInfo+"}"
+            if(clientInfo[-2]==','):
+                clientInfo=clientInfo[:-2]+"}"
+            dataToSend=combineInfo(message_=clientInfo,status_='updateMember')
+            print "[+]updateMemeber self"
+            ss.write_message(dataToSend)
 
     @staticmethod
-    def update_member_to_all():
-        clientInfo="{"
-        for c in SocketHandler.clients:
-            clientInfo=clientInfo+c.my_user_name+":"+"1,"
-        clientInfo=clientInfo+"}"
-        if(clientInfo[-2]==','):
-            clientInfo=clientInfo[:-2]+"}"
-        dataToSend=combineInfo(message_=clientInfo,status_='updateMember')
-        print "[+]updateMemeber all"
-        SocketHandler.send_to_all(dataToSend)
+    def update_member_to_all(roomid):
+        if(roomid==""):
+            clientInfo="{"
+            for c in SocketHandler.clients:
+                clientInfo=clientInfo+c.my_user_name+":"+"1,"
+            clientInfo=clientInfo+"}"
+            if(clientInfo[-2]==','):
+                clientInfo=clientInfo[:-2]+"}"
+            dataToSend=combineInfo(message_=clientInfo,status_='updateMember')
+            print "[+]updateMemeber all"
+            SocketHandler.send_to_all(dataToSend)
+        else:
+            clientInfo="{"
+            for c in SocketHandler.clients:
+                clientInfo=clientInfo+c.my_user_name+":"+"1,"
+            clientInfo=clientInfo+"}"
+            if(clientInfo[-2]==','):
+                clientInfo=clientInfo[:-2]+"}"
+            dataToSend=combineInfo(message_=clientInfo,status_='updateMember')
+            print "[+]updateMemeber all"
+            SocketHandler.send_to_all(dataToSend,roomid)
 
     def open(self):
         self.my_color_name="black"
+        self.my_chatroom="1"
         #self.my_user_name='Anonymous'+str(id(self))[-6:]
         uid=self.get_secure_cookie('uid')
         if(uid not in sessions):
@@ -199,11 +241,11 @@ class SocketHandler(tornado.websocket.WebSocketHandler):
         dataToSend=combineInfo(id_=id(self),userName_=self.my_user_name,status_='varify',color_=self.my_color_name)
         self.write_message(dataToSend)
         SocketHandler.clients.add(self)
+        SocketHandler.roomContainer[self.my_chatroom].add(self)
         dataToSend=combineInfo(userName_=self.my_user_name,status_='join')
         print "[+]join all"
-        SocketHandler.send_to_all(dataToSend)
-        SocketHandler.update_member(self)
-
+        SocketHandler.send_to_all(dataToSend,self.my_chatroom)
+        SocketHandler.update_member(self,self.my_chatroom)
 
     def on_close(self):
         uid=self.get_secure_cookie('uid')
@@ -211,9 +253,11 @@ class SocketHandler(tornado.websocket.WebSocketHandler):
             print "[-]ws close found no session "
             return 
         SocketHandler.clients.remove(self)
+        SocketHandler.roomContainer[self.my_chatroom].remove(self)
+        #sessions.pop(uid,1)#newadd1
         dataToSend=combineInfo(userName_=self.my_user_name,status_='remove')
         print "[+]remove all"
-        SocketHandler.send_to_all(dataToSend)
+        SocketHandler.send_to_all(dataToSend,self.my_chatroom)
         print str(id(self)) + ' has left'
         logStr=getTime()+self.my_user_name+' left\n'
 
@@ -231,7 +275,7 @@ class SocketHandler(tornado.websocket.WebSocketHandler):
             message['message']=tmp
             print "replace ",tmp
             dataToSend=combineInfo(userName_=message['userName'],id_=message['id'],message_=message['message'],toWho_="everyone",status_="chat",color_=message['color'])
-            SocketHandler.send_to_all(dataToSend)
+            SocketHandler.send_to_all(dataToSend,self.my_chatroom)
         elif(message['status']=='userNameChange'):
             tmpSession={'userName':message['userName'],'id':str(id(self)),'color':self.my_color_name}
             logStr=getTime()+self.my_user_name+' try to change nick name to '+message['userName']+'\n'
@@ -246,10 +290,31 @@ class SocketHandler(tornado.websocket.WebSocketHandler):
                 self.write_message(dataToSend)
                 self.my_user_name=message['userName']
                 print "[+]updateName all"
-                SocketHandler.update_member_to_all()
+                SocketHandler.update_member_to_all(self.my_chatroom)
         elif(message['status']=='updateMember'):
             print "query for update member"
-            SocketHandler.update_member(self)
+            SocketHandler.update_member(self,self.my_chatroom)
+        elif(message['status']=='changeRoom'):
+            tmp=str(message['message'])
+            originRoom=self.my_chatroom
+            self.my_chatroom=tmp
+            newRoom=tmp
+            #先删除原来房间的set 在增加新的房间的set
+            SocketHandler.roomContainer[originRoom].remove(self)
+            SocketHandler.roomContainer[newRoom].add(self)
+            #通知原房间所有用户一个user消失了
+            dataToSend=combineInfo(userName_=self.my_user_name,status_='remove')
+            print "[+]remove from origin room"
+            SocketHandler.send_to_all(dataToSend,originRoom)
+            #通知新的房间所有用户一个user出现了
+            dataToSend=combineInfo(userName_=self.my_user_name,status_='join')
+            print "[+]join to new root"
+            SocketHandler.send_to_all(dataToSend,newRoom)
+            #更新我的成员列表
+            SocketHandler.update_member(self,self.my_chatroom)
+            #发送消息 告知更改mainroomName的html内容
+
+            print "[+]Change chatting room to [{}] completed".format(tmp)
 
         #print sessions
 
@@ -280,7 +345,13 @@ if __name__ == '__main__':
     if(len(sys.argv)!=2):
         address="127.0.0.1"
     else:
-        address=sys.argv[1]      
+        address="www.shadowwalker.cn"   
+    #初始化聊天室列表
+    SocketHandler.roomContainer["1"]=set()
+    SocketHandler.roomContainer["2"]=set()
+    SocketHandler.roomContainer["3"]=set()
+    SocketHandler.roomContainer["4"]=set()
+    #####
     thread.start_new_thread(checkTast,())
     app.listen(listenPort)
     tornado.ioloop.IOLoop.instance().start()

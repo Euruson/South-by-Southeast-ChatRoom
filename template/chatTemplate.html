@@ -7,7 +7,6 @@
 <title>东南偏南·聊天屋</title>
 <meta name="description" content="-" />
 <script src="http://wow.techbrood.com/libs/jquery/jquery-1.11.1.min.js"></script>
-<link rel='stylesheet prefetch' href='/static/css/reset.css'>
 <link rel='stylesheet prefetch' href='https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css'>
 
 
@@ -22,11 +21,12 @@ var color_name="black";
 var my_id_number=0;
 var my_user_name="";
 var my_color_name="black";
+var globalRoomname="1";
 
 function parseJson(w)
-    {
-        return eval("("+w+")");
-    }
+{
+    return eval("("+w+")");
+}
 
 function setCursorPosition(elem, index) {
     var val = elem.value
@@ -112,7 +112,7 @@ ws.onmessage = function(event) {
         }
         else if(status_str=="join")
         {
-                appendMessageContent="<li class='clearfix' id='"+user_name+"'><img src='{{static_url('user.jpg')}}' width='70' height='70' alt='avatar' /><div class='about'><div class='name'>"+user_name+"</div><div class='status'><i class='fa fa-circle online'></i> online</div></div></li>";
+                appendMessageContent="<li class='clearfix member' id='"+user_name+"'><img src='{{static_url('user.jpg')}}' width='70' height='70' alt='avatar' /><div class='about'><div class='name'>"+user_name+"</div><div class='status'><i class='fa fa-circle online'></i> online</div></div></li>";//newadd1
             $('#join').append(appendMessageContent);
             //alert('join:  '+appendMessageContent)
         }
@@ -124,22 +124,28 @@ ws.onmessage = function(event) {
         {
             $('#join').children().remove();
             //
-            appendMessageContent='<li class="addroom" onclick="addroomfun()">+ &nbsp; 创建新的聊天室</li> <li class="clearfix" onclick="choseroom(1)"><img src="/static/images/chatroom.png" width="50" height="50" alt="avatar" /><div class="about" style="margin-top:0px;"><div class="name">ChatRoom 1</div><div class="status" style="margin-top:8px;"><image src="/static/images/num.png">&nbsp1;</div></div></li>'
+            
+
+            appendMessageContent='<li class="clearfix member" onclick="choseroom(1)"><img src="/static/images/chatroom.png" width="50" height="50" alt="avatar" /><div class="about" style="margin-top:0px;"><div class="name"><font id="mainroomName">room'+globalRoomname+'</font></div><div class="status" style="margin-top:8px;"></div></div></li>'
+
+            appendMessageContent+='<li class="clearfix chatroom" onclick="choseroom(1)"><img src="/static/images/chatroom.png" width="50" height="50" alt="avatar" /><div class="about" style="margin-top:0px;"><div class="name">room1</div><div class="status" style="margin-top:8px;"></div></div></li>'
+            appendMessageContent+='<li class="clearfix chatroom" onclick="choseroom(2)"><img src="/static/images/chatroom.png" width="50" height="50" alt="avatar" /><div class="about" style="margin-top:0px;"><div class="name">room2</div><div class="status" style="margin-top:8px;"></div></div></li>'
+            appendMessageContent+='<li class="clearfix chatroom" onclick="choseroom(3)"><img src="/static/images/chatroom.png" width="50" height="50" alt="avatar" /><div class="about" style="margin-top:0px;"><div class="name">room3</div><div class="status" style="margin-top:8px;"></div></div></li>'
+            appendMessageContent+='<li class="clearfix chatroom" onclick="choseroom(4)"><img src="/static/images/chatroom.png" width="50" height="50" alt="avatar" /><div class="about" style="margin-top:0px;"><div class="name">room4</div><div class="status" style="margin-top:8px;"></div></div></li>'
+            
             $('#join').append(appendMessageContent);
 
             ///
+            roomid="";
             var j=parseJson(message_str);
             for (var i in j) {
-            appendMessageContent="<li class='clearfix' id='"+i+"'><img src='{{static_url('user.jpg')}}' width='70' height='70' alt='avatar' /><div class='about'><div class='name'>"+i+"</div><div class='status'><i class='fa fa-circle online'></i> online</div></div></li>";
-            $('#join').append(appendMessageContent);
-
+                roomid=j[i];
+                appendMessageContent="<li class='clearfix member' id='"+i+"'><img src='{{static_url('user.jpg')}}' width='70' height='70' alt='avatar' /><div class='about'><div class='name'>"+i+"</div><div class='status'><i class='fa fa-circle online'></i> online</div></div></li>";
+                $('#join').append(appendMessageContent);
             } 
+            
         }
-        else if(status_str=="addroom")
-        {
-           appendMessageContent="<li class='addroom' onclick='addroomfun()'>+ &nbsp; 创建新的聊天室</li>" ;
-           $('#join').append(appendMessageContent); 
-        }
+
 
     }
     };
@@ -158,6 +164,7 @@ ws.onmessage = function(event) {
     ws.send(JSON.stringify(data));
     }
 
+
     function changepage(flag){
         if(flag==1)
         {
@@ -166,27 +173,45 @@ ws.onmessage = function(event) {
             $("#member").css("opacity","0.75");
             $("#chatroom").css("border-bottom","solid 2px");
             $("#chatroom").css("opacity","1");
-            alert("选择聊天室");
+            $('.chatroom').css("display","list-item");
+            $('.member').css("display","none");
+           // alert("选择聊天室");
         }
         else
         {
             $("#member").css("border-bottom","solid 2px");
-             $("#member").css("opacity","1");
+            $("#member").css("opacity","1");
             $("#chatroom").css("border-bottom","none");
             $("#chatroom").css("opacity","0.75");
-            alert("选择成员");
+            $('.chatroom').css("display","none");
+            $('.member').css("display","list-item");
+            //alert("选择成员");
         }
     }
 
     function addroomfun()
     {
-        alert("增加聊天室函数");
+        alert("增加聊天室函数");//删除了
     }
 
-    function choseroom(roomid)
+    function choseroom(roomid)//切换聊天室的事件函数
     {
-        alert("选择聊天室");
+        roomid=""+roomid
+        var data = {
+            'message':roomid,
+            'userName':$("#userNameInputId").val(),
+            'id':my_id_number,
+            'toWho':'system',
+            'status':'changeRoom',
+            'color':my_color_name
+            };
+        ws.send(JSON.stringify(data));
+        //告诉服务器我换了房间号码
+        alert("选择聊天室"+roomid);
+        $("#message").children().remove();
+        globalRoomname=roomid;//全局变量
     }
+
     function EnterPress(e){   
     if(e.keyCode == 13)
     {
@@ -523,6 +548,12 @@ html::-webkit-scrollbar{width:0px}
 #chatroom{
     opacity: 0.75;
 }
+.chatroom{
+    display:none;
+}
+.member{
+    display:list-item;
+}
 </style>
 </head>
 <body>
@@ -546,13 +577,11 @@ html::-webkit-scrollbar{width:0px}
         </div>
         <div class="chat-history" style="height:690px;width:600px;overflow:auto;">
         <ul id="join" >
-            <li class="addroom" onclick="addroomfun()">
-                + &nbsp; 创建新的聊天室
-            </li> 
-            <li class="clearfix" onclick="choseroom(1)">
+
+            <li class="clearfix chatroom" onclick="choseroom(1)">
                 <img src="/static/images/chatroom.png" width="50" height="50" alt="avatar" />
                 <div class="about" style="margin-top:0px;">
-                    <div class="name">ChatRoom 1</div>
+                    <div class="name">room1</div>
                     <div class="status" style="margin-top:8px;">
                        <image src="/static/images/num.png">&nbsp1;
                     </div>

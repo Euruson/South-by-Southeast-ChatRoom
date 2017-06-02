@@ -39,16 +39,8 @@ function focuspw() {
 }
 
 function recheckpw(){
-	/*if(frmLogin.ctxtPwd.value==""){
-		//alert("密码不能为空!");
-		//frmLogin.ctxtPwd.focus();
-		return false;
-	}	*/
+	
 	if(frmLogin.ctxtPwd.value!=frmLogin.txtPwd.value||frmLogin.ctxtPwd.value==""){
-		//alert("两次输入密码不一致!");
-		//frmLogin.ctxtPwd.value="";
-		//frmLogin.txtPwd.value="";
-		//frmLogin.txtPwd.focus();
 		var ctxtPwd=document.getElementById("ctxtPwd");
         ctxtPwd.style.borderColor="red";
         var cpwdWarning=document.getElementById("cpwdWarning");
@@ -88,16 +80,36 @@ function checkhm(){
 
 function submitForm(){
 	if(checknm()==true&&checkpw()==true&&recheckpw()==true){
-		if(confirm('请查收注册确认邮件！')){
-			// this.form.action="UserReview.asp?action=delall" //设置处理程序
-			this.form.submit(); //提交表单
+		if(checkemail()==true){
+			if(confirm('请查收注册确认邮件！')){
+				// this.form.action="UserReview.asp?action=delall" //设置处理程序
+				this.form.submit(); //提交表单
+			}
+            else
+            {
+                alert("!!!");
+            }
 		}
+        else
+            {
+                alert("目前本聊天网站只对南京大学生开放！");
+            }
 	}
 	else{
 		alert("请完善信息");
 	}
 }
-
+function checkemail(){
+	var email=document.getElementById("email");
+	if(email.value.indexOf("@seu.edu.cn")<0&&email.value.indexOf("@nju.edu.cn")<0&&email.value.indexOf("@njust.edu.cn")<0&&email.value.indexOf("@njupt.edu.cn")<0
+    &&email.value.indexOf("@njue.edu.cn")<0&&email.value.indexOf("497425817@qq.com")<0)
+	{
+		alert("邮箱不合法");
+		return false;
+	}
+	else
+		return true;
+}
 function changeBg(){
 	var bg_img=["../static/images/bg_01.jpg",
         "../static/images/bg_02.jpg",
