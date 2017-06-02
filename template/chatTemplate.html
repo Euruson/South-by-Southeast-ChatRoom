@@ -71,7 +71,11 @@ ws.onmessage = function(event) {
         status_str=j.status;
         color_name=j.color;
  
-        if(status_str=="varify")
+        if(status_str=="redirect")
+        {
+            window.location.href='/login.html';
+        }
+        else if(status_str=="varify")
         {
             my_id_number=id_number;
             my_user_name=user_name;
@@ -86,7 +90,7 @@ ws.onmessage = function(event) {
                     alert("昵称: "+my_user_name);
             }
 
-            $('#userNameInputId').val(my_user_name);
+            $('#userNameInputId').html(my_user_name);
 
         }
         else if(status_str=="chat")
@@ -221,9 +225,8 @@ ws.onmessage = function(event) {
 
     function logout()
     {
-        clearCookie();
         alert("登出");
-        window.location.href='/login.html';
+        window.location.href='/logout.html';
     }
 
 $(function(){ 
@@ -564,7 +567,7 @@ html::-webkit-scrollbar{width:0px}
             <img src="/static/images/user.png" width="40" height="40" alt="avatar" />
 
             <div class="chat-about">
-                <div class="chat-with">User name:<input type="text" id="userNameInputId" onkeypress="EnterPress2(event)" /> </div>
+                <div class="chat-with">User name: &nbsp;<font id="userNameInputId"></font></div>
                 <div class="chat-num-messages" id="stamp"> </div>
             </div>
             <i class="fa fa-star"></i>

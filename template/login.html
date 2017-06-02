@@ -15,6 +15,24 @@
     {
         alert("账户不存在或密码错误！");
     }
+    else if(getQueryString("error")=='3')
+    {
+        alert("同一个账户只能登陆一个会话！");
+    }
+    else if(getQueryString("error")=='4')
+    {
+        alert("已经登陆该账户！");
+    }
+
+    function clearCookie()
+    {
+        var keys=document.cookie.match(/[^ =;]+(?=\=)/g);
+        if (keys) {
+        for (var i = keys.length; i--;)
+        document.cookie=keys[i]+'=0;expires=' + new Date( 0).toUTCString()
+        }
+        
+    }
 
     </SCRIPT>
         <META charset="utf-8">
@@ -23,7 +41,7 @@
         <LINK rel="stylesheet" href="../static/css/mystyle.css">
          <SCRIPT src="../static/js/login.js"> </SCRIPT>   
     </HEAD>
-    <BODY class="Loginbody">
+    <BODY class="Loginbody" onload="clearCookie()">
         <DIV id="Login"     text-align: center;>
         <!--<IMG class="logo"  src="res/images/logo.png">-->
         <FORM name="frmLogin" method="post" action="login.action">

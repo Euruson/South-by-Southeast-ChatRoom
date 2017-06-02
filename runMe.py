@@ -28,15 +28,32 @@ log=open("log.txt","a")
 def getTime():
     return '['+time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())+'] '
 
+def SessionExsit(uid):
+    global sessions
+    print "[+]SessionExsit(),enter"
+    if(uid in sessions):
+        if(sessions[uid]['sessioncount']!=0):
+            print "[-]sessions[{}]['sessioncount']={},return True exsit".format(uid,sessions[uid]['sessioncount'])
+            return True
+        else:
+            print "[-]sessions[{}]['sessioncount']={},return False exsit".format(uid,sessions[uid]['sessioncount'])
+            return False
+    else:
+        print "[-]sessions[{}] doesnt exsit,return False exsit".format(uid)
+        return False
+
 class Index(tornado.web.RequestHandler):
     def get(self):
         global listenPort
+        print "[+]Enter get index"
         if(self.get_secure_cookie('status')!='logined'):
+            print "[-]Not login ,redirect to login.html"
             self.redirect('login.html')
             return
-        if not self.get_secure_cookie('uid'):
-            setUid="1234"
-            self.set_secure_cookie('uid',setUid)
+        if(SessionExsit(self.get_secure_cookie('uid'))):
+            print "[-]Already logined,redirect to login.html"
+            self.redirect('login.html?error=3')
+            return
         self.render('chatTemplate.html',lp=listenPort,ipAddress=address)
 class VerifyHandler(tornado.web.RequestHandler):
     def get(self):
@@ -53,21 +70,38 @@ class VerifyHandler(tornado.web.RequestHandler):
         sql.commit()
         sql.close()
 
+class LogoutHandler(tornado.web.RequestHandler):
+    def get(self):
+        uid=self.get_secure_cookie('uid')
+        sessions.pop(uid,1)
+        print "[+]logout remove session uid",uid
+        print "[+]after remove,new seesions=",sessions
+        self.redirect('login.html')
 
 class LoginHandler(tornado.web.RequestHandler):
     def get(self):
-        if not self.get_secure_cookie('uid'):
-            setUid="1234"
-            self.set_secure_cookie('uid',setUid)
         self.render('login.html')
     def post(self):
+        global sessions
         username=self.get_argument('txtName')
         password=self.get_argument('txtPwd')
         sql=sqlite3.connect("chatroom.db")
         cur=sql.execute("select id from user where name='{}' and password='{}' and valid=1".format(username,password))
         res=cur.fetchall()
         if(len(res)!=0):#密码匹配
+            salt="e53af9306298b57ffd2f63714e2e6313"
             self.set_secure_cookie('status','logined')
+            uid=md5.md5(salt+username).hexdigest()
+            print "[+]login index,test if exsit session"
+            if(SessionExsit(uid)):
+                #不同浏览器尝试登陆同一个账户
+                self.redirect('login.html?error=4')
+                print "[-]login post session exsit ,redirect to login.html with get"
+                return
+            self.set_secure_cookie('uid',uid)
+            sessions[uid]={}#创建会话变量
+            sessions[uid]['username']=username
+            sessions[uid]['sessioncount']=0
             self.redirect("/")
         else:
             cur=sql.execute("select id from user where name='{}' and password='{}' and valid=0".format(username,password))
@@ -145,11 +179,21 @@ class SocketHandler(tornado.websocket.WebSocketHandler):
 
     def open(self):
         self.my_color_name="black"
-        self.my_user_name='Anonymous'+str(id(self))[-6:]
-        print str(id(self)) + ' has joined'
+        #self.my_user_name='Anonymous'+str(id(self))[-6:]
+        uid=self.get_secure_cookie('uid')
+        if(uid not in sessions):
+            print "[-]ws open found no session ,redirect to login.html"
+            dataToSend=combineInfo(id_=id(self),userName_="",status_='redirect',color_=self.my_color_name)
+            self.write_message(dataToSend)#出现未曾用过的sessionid  重定向到登陆界面
+            return
+        self.my_user_name=sessions[uid]['username']
+        sessions[uid]['sessioncount']+=1
+        print "[+]",self.my_user_name + ' has joined'
+        print "[+]sessioncount=",sessions[uid]['sessioncount']
         logStr=getTime()+self.my_user_name+' joined\n'
         log.write(logStr)
         log.flush()	
+        print "[+]New ws connection ,session id:",self.get_secure_cookie('uid')
         self.my_color_name=themeColor[int(random.random()*6)]
         print 'Color:',self.my_color_name
         dataToSend=combineInfo(id_=id(self),userName_=self.my_user_name,status_='varify',color_=self.my_color_name)
@@ -162,6 +206,10 @@ class SocketHandler(tornado.websocket.WebSocketHandler):
 
 
     def on_close(self):
+        uid=self.get_secure_cookie('uid')
+        if(uid not in sessions):
+            print "[-]ws close found no session "
+            return 
         SocketHandler.clients.remove(self)
         dataToSend=combineInfo(userName_=self.my_user_name,status_='remove')
         print "[+]remove all"
@@ -186,8 +234,6 @@ class SocketHandler(tornado.websocket.WebSocketHandler):
             SocketHandler.send_to_all(dataToSend)
         elif(message['status']=='userNameChange'):
             tmpSession={'userName':message['userName'],'id':str(id(self)),'color':self.my_color_name}
-            tmpUid=self.get_secure_cookie('uid')
-            sessions[tmpUid]=tmpSession
             logStr=getTime()+self.my_user_name+' try to change nick name to '+message['userName']+'\n'
             log.write(logStr)
             log.flush()
@@ -217,18 +263,24 @@ def checkTast():
         time.sleep(10)
 
 if __name__ == '__main__':
+    global address
     app = tornado.web.Application([
         ('/', Index),
         ('/soc', SocketHandler),
         ('/login.html',LoginHandler),
         ('/login.action',LoginHandler),
         ('/register.html',RegisterHandler),
-        ('/verify',VerifyHandler)
+        ('/verify',VerifyHandler),
+        ('/logout.html',LogoutHandler)
     ],cookie_secret='abcd',
     template_path=os.path.join(os.path.dirname(__file__), "template"),
     static_path=os.path.join(os.path.dirname(__file__), "static"),
     )
     print "Running"
+    if(len(sys.argv)!=2):
+        address="127.0.0.1"
+    else:
+        address=sys.argv[1]      
     thread.start_new_thread(checkTast,())
     app.listen(listenPort)
     tornado.ioloop.IOLoop.instance().start()
