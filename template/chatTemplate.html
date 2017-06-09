@@ -7,7 +7,6 @@
 <title>东南偏南·聊天屋</title>
 <meta name="description" content="-" />
 <script src="http://wow.techbrood.com/libs/jquery/jquery-1.11.1.min.js"></script>
-<link rel='stylesheet prefetch' href='/css/reset.css'>
 <link rel='stylesheet prefetch' href='https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css'>
 
 
@@ -22,11 +21,12 @@ var color_name="black";
 var my_id_number=0;
 var my_user_name="";
 var my_color_name="black";
+var globalRoomname="1";
 
 function parseJson(w)
-    {
-        return eval("("+w+")");
-    }
+{
+    return eval("("+w+")");
+}
 
 function setCursorPosition(elem, index) {
     var val = elem.value
@@ -71,7 +71,11 @@ ws.onmessage = function(event) {
         status_str=j.status;
         color_name=j.color;
  
-        if(status_str=="varify")
+        if(status_str=="redirect")
+        {
+            window.location.href='/login.html';
+        }
+        else if(status_str=="varify")
         {
             my_id_number=id_number;
             my_user_name=user_name;
@@ -86,7 +90,7 @@ ws.onmessage = function(event) {
                     alert("昵称: "+my_user_name);
             }
 
-            $('#userNameInputId').val(my_user_name);
+            $('#userNameInputId').html(my_user_name);
 
         }
         else if(status_str=="chat")
@@ -108,7 +112,7 @@ ws.onmessage = function(event) {
         }
         else if(status_str=="join")
         {
-                appendMessageContent="<li class='clearfix' id='"+user_name+"'><img src='{{static_url('user.jpg')}}' width='70' height='70' alt='avatar' /><div class='about'><div class='name'>"+user_name+"</div><div class='status'><i class='fa fa-circle online'></i> online</div></div></li>";
+                appendMessageContent="<li class='clearfix member' id='"+user_name+"'><img src='{{static_url('user.jpg')}}' width='70' height='70' alt='avatar' /><div class='about'><div class='name'>"+user_name+"</div><div class='status'><i class='fa fa-circle online'></i> online</div></div></li>";//newadd1
             $('#join').append(appendMessageContent);
             //alert('join:  '+appendMessageContent)
         }
@@ -119,15 +123,34 @@ ws.onmessage = function(event) {
         else if(status_str=='updateMember')
         {
             $('#join').children().remove();
+            //
+            
+
+            appendMessageContent='<li class="clearfix member" onclick="choseroom(1)"><img src="/static/images/chatroom.png" width="50" height="50" alt="avatar" /><div class="about" style="margin-top:0px;"><div class="name"><font id="mainroomName">room'+globalRoomname+'</font></div><div class="status" style="margin-top:8px;"></div></div></li>'
+
+            appendMessageContent+='<li class="clearfix chatroom" onclick="choseroom(1)"><img src="/static/images/chatroom.png" width="50" height="50" alt="avatar" /><div class="about" style="margin-top:0px;"><div class="name">room1</div><div class="status" style="margin-top:8px;"></div></div></li>'
+            appendMessageContent+='<li class="clearfix chatroom" onclick="choseroom(2)"><img src="/static/images/chatroom.png" width="50" height="50" alt="avatar" /><div class="about" style="margin-top:0px;"><div class="name">room2</div><div class="status" style="margin-top:8px;"></div></div></li>'
+            appendMessageContent+='<li class="clearfix chatroom" onclick="choseroom(3)"><img src="/static/images/chatroom.png" width="50" height="50" alt="avatar" /><div class="about" style="margin-top:0px;"><div class="name">room3</div><div class="status" style="margin-top:8px;"></div></div></li>'
+            appendMessageContent+='<li class="clearfix chatroom" onclick="choseroom(4)"><img src="/static/images/chatroom.png" width="50" height="50" alt="avatar" /><div class="about" style="margin-top:0px;"><div class="name">room4</div><div class="status" style="margin-top:8px;"></div></div></li>'
+            
+            $('#join').append(appendMessageContent);
+
+            ///
+            roomid="";
             var j=parseJson(message_str);
             for (var i in j) {
-            appendMessageContent="<li class='clearfix' id='"+i+"'><img src='{{static_url('user.jpg')}}' width='70' height='70' alt='avatar' /><div class='about'><div class='name'>"+i+"</div><div class='status'><i class='fa fa-circle online'></i> online</div></div></li>";
-            $('#join').append(appendMessageContent);
+                roomid=j[i];
+                appendMessageContent="<li class='clearfix member' id='"+i+"'><img src='{{static_url('user.jpg')}}' width='70' height='70' alt='avatar' /><div class='about'><div class='name'>"+i+"</div><div class='status'><i class='fa fa-circle online'></i> online</div></div></li>";
+                $('#join').append(appendMessageContent);
             } 
+            
         }
+
 
     }
     };
+
+    
 
     function send() { 
     var data = {
@@ -142,8 +165,52 @@ ws.onmessage = function(event) {
     }
 
 
+    function changepage(flag){
+        if(flag==1)
+        {
+           // alert("1111");
+            $("#member").css("border-bottom","none");
+            $("#member").css("opacity","0.75");
+            $("#chatroom").css("border-bottom","solid 2px");
+            $("#chatroom").css("opacity","1");
+            $('.chatroom').css("display","list-item");
+            $('.member').css("display","none");
+           // alert("选择聊天室");
+        }
+        else
+        {
+            $("#member").css("border-bottom","solid 2px");
+            $("#member").css("opacity","1");
+            $("#chatroom").css("border-bottom","none");
+            $("#chatroom").css("opacity","0.75");
+            $('.chatroom').css("display","none");
+            $('.member').css("display","list-item");
+            //alert("选择成员");
+        }
+    }
 
+    function addroomfun()
+    {
+        alert("增加聊天室函数");//删除了
+    }
 
+    function choseroom(roomid)//切换聊天室的事件函数
+    {
+        roomid=""+roomid
+        var data = {
+            'message':roomid,
+            'userName':$("#userNameInputId").val(),
+            'id':my_id_number,
+            'toWho':'system',
+            'status':'changeRoom',
+            'color':my_color_name
+            };
+        ws.send(JSON.stringify(data));
+        //告诉服务器我换了房间号码
+        alert("选择聊天室"+roomid);
+        $("#message").children().remove();
+        globalRoomname=roomid;//全局变量
+    }
 
     function EnterPress(e){   
     if(e.keyCode == 13)
@@ -171,7 +238,21 @@ ws.onmessage = function(event) {
         $('#userNameInputId').val("").focus();
         }
     }
-    
+    function clearCookie()
+    {
+        var keys=document.cookie.match(/[^ =;]+(?=\=)/g);
+        if (keys) {
+        for (var i = keys.length; i--;)
+        document.cookie=keys[i]+'=0;expires=' + new Date( 0).toUTCString()
+        }
+        
+    }
+
+    function logout()
+    {
+        alert("登出");
+        window.location.href='/logout.html';
+    }
 
 $(function(){ 
 $("html,body").animate({"scrollTop": "-300px"}, 1000); 
@@ -227,7 +308,10 @@ body {
     width: 260px;
     float: left;
 }
-.people-list .search {
+.selectpage{
+    height: 40px;
+}
+.people-list .search{
     padding: 20px;
 }
 .people-list input {
@@ -407,7 +491,7 @@ overflow:-moz-scrollbars-none;
    /* position:absolute;*/
     text-align:right;
     margin-top:-40px;
-    margin-bottom: 50px;
+    margin-bottom: 1px;
     margin-right:20px;
     font-size:15px;
 }
@@ -422,7 +506,23 @@ a.loginandreg:hover{
     text-decoration: none;
 }
 html::-webkit-scrollbar{width:0px}
-
+.clearfix{
+    list-style-type:none;
+}
+.addroom{
+    list-style-type:none;
+    margin-left: 35px;
+    font-size: 15px;
+    opacity: 0.75;
+    
+}
+.addroom:hover{
+    cursor: pointer;
+    opacity: 1;
+}
+.about:hover{
+    cursor: pointer;
+}
 .clearfix:after {
     visibility: hidden;
     display: block;
@@ -430,44 +530,73 @@ html::-webkit-scrollbar{width:0px}
     content: " ";
     clear: both;
     height: 0;
+    
 
+}
+.selectitem:hover{
+    cursor: pointer;
+}
+.selectitem{
+    font-size:15px;
+    height:44px;
+    width:100px;
+    text-align: center;
+}
+#member{
+    border-bottom: solid 2px;
+}
+#chatroom{
+    opacity: 0.75;
+}
+.chatroom{
+    display:none;
+}
+.member{
+    display:list-item;
 }
 </style>
 </head>
 <body>
     <div class="login">
-        <p ><a class="loginandreg" href="login.html">LOGIN</a> <span style="color:black">&nbsp| &nbsp<span> <a class="loginandreg" href="register.html">REGISTER</a></p>
+        <p ><a class="loginandreg" href="login.html">LOGIN</a> <span style="color:black">&nbsp;| &nbsp;<span> <a class="loginandreg" href="register.html">REGISTER</a> <span style="color:black">&nbsp;| &nbsp;<span> <a class="loginandreg" onclick="logout()">LOGOUT</a></p>
     </div>
 <div class="container clearfix">
    
     <div class="people-list" id="people-list">
+        <div class="selectpage">
+            <TABLE style="margin:auto;top:10px;">
+                <TR>
+                    <TD class="selectitem" id="chatroom" onclick="changepage(1)">聊天室</TD>
+                    <TD class="selectitem" id="member" onclick="changepage(2)">成员</TD>
+                </TR>
+            </TABLE>
+        </div>
         <div class="search">
             <input type="text" placeholder="search" />
             <i class="fa fa-search"></i>
         </div>
-        <div class="chat-history" style="height:700px;width:600px;overflow:auto;">
-        <ul id="join">
-        
-            <li class="clearfix">
-                <img src="{{static_url('user.jpg')}}" width="70" height="70" alt="avatar" />
-                <div class="about">
-                    <div class="name">Admin Robot</div>
-                    <div class="status">
-                        <i class="fa fa-circle online"></i> online
+        <div class="chat-history" style="height:690px;width:600px;overflow:auto;">
+        <ul id="join" >
+
+            <li class="clearfix chatroom" onclick="choseroom(1)">
+                <img src="/static/images/chatroom.png" width="50" height="50" alt="avatar" />
+                <div class="about" style="margin-top:0px;">
+                    <div class="name">room1</div>
+                    <div class="status" style="margin-top:8px;">
+                       <image src="/static/images/num.png">&nbsp1;
                     </div>
                 </div>
             </li>
-
         </ul>
         </div>
     </div>
 
     <div class="chat">
         <div class="chat-header clearfix">
-            <img src="{{static_url('user.jpg')}}" width="40" height="40" alt="avatar" />
+            <img src="/static/images/user.png" width="40" height="40" alt="avatar" />
 
             <div class="chat-about">
-                <div class="chat-with">User name:<input type="text" id="userNameInputId" onkeypress="EnterPress2(event)" /> </div>
+                <div class="chat-with">User name: &nbsp;<font id="userNameInputId"></font></div>
                 <div class="chat-num-messages" id="stamp"> </div>
             </div>
             <i class="fa fa-star"></i>
@@ -483,7 +612,7 @@ html::-webkit-scrollbar{width:0px}
         <!-- end chat-history -->
 
         <div class="chat-message clearfix">
-            <textarea name="message-to-send" id="input_data" placeholder="Type your message" rows="3" onkeypress="EnterPress(event)"></textarea>
+            <textarea name="message-to-send" id="input_data" placeholder="Type your message and press enter to send!" rows="3" onkeypress="EnterPress(event)"></textarea>
             </div>
 
 

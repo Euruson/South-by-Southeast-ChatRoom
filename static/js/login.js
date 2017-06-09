@@ -18,7 +18,7 @@ function focus_txtName() {
 
 
 function check_txtPwd() {
-    if (frmLogin.txtPwd.value.length <= 6) {
+    if (frmLogin.txtPwd.value.length < 6) {
         //alert("密码不能小于6位");
         //frmLogin.txtPwd.focus();
         var txtPwd=document.getElementById("txtPwd");

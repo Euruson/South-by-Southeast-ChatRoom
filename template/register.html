@@ -1,16 +1,31 @@
 <HTML>
     <HEAD>
+    <script type="text/javascript">
+    function getQueryString(name) 
+    { 
+        var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)", "i"); 
+        var r = window.location.search.substr(1).match(reg); 
+        if (r != null) return unescape(r[2]); return null; 
+    } 
+
+    if(getQueryString("error")=='1')
+    {
+        alert("该用户名已被注册！");
+    }
+
+    </script>
         <META charset="utf-8">
         <SCRIPT src = "../static/js/regstyle.js">  </SCRIPT>
         <link rel="shortcut icon" href="http://s.techbrood.com/themes/techbrood/image/favicon.ico" type="image/x-icon" />
         <TITLE>注册 东南偏南</TITLE>
         <LINK rel="stylesheet" href="../static/css/mystyle.css">
+        
     </HEAD>
     <BODY id="regbody" class="Registerbody" onload="changeBg()">
         <!--<VIDEO class="Bgvideo" autoplay muted loop style="width: 100%;"><SOURCE src="Log_bg_video.mp4"></VIDEO>-->
         <DIV id="Register" text-align: center;>
         <!--<IMG class="logo"  src="res/images/logo.png">-->
-        <FORM name="frmLogin" method="post" action="regist.action">
+        <FORM name="frmLogin" method="post" action="register.html">
             <TABLE style="margin:auto;">
                 <CAPTION><span style="font-weight: bold;font-size:15px;">东南偏南</span></CAPTION>
                 <CAPTION>新伙伴注册</CAPTION>
@@ -52,17 +67,25 @@
                     <TD colspan="2"><INPUT name="txtRname" type="text" placeholder="一句话描述自己，用／隔开，如：自驾／背包客" onblur=""></TD>
                 </TR>-->
                 <TR>
-                    <TD colspan="2"><INPUT name="txtEmail" type="text" placeholder="邮箱" onblur="checkhm()"></TD>
+                    <TD colspan="2"><INPUT name="txtEmail" type="text" id="email" placeholder="邮箱" onblur="checkhm()" list="emailList"></TD>
+                    <datalist id="emailList">
+                        <option value="*@seu.edu.cn">
+                        <option value="*@nju.edu.cn">
+                        <option value="*@njust.edu.cn">
+                        <option value="*@njupt.edu.cn">
+                        <option value="*@njue.edu.cn">
+                    </datalist>
+
                 </TR>
                  <TR>
                     <TD colspan="2">
                         <DIV class="Styleselect">
-                        <SELECT padding-left="20" name="txtCountry">
-                            <OPTION value="cse">&nbsp计算机科学与工程学院</OPTION>
-                            <OPTION value="ruanjian">&nbsp软件学院</OPTION>
-                            <OPTION value="tumu">&nbsp土木学院</OPTION>
-                            <OPTION value="jiaotong">&nbsp交通学院</OPTION>
-                            <OPTION value="oths">&nbsp其他</OPTION>
+                        <SELECT padding-left="20" name="txtColege">
+                            <OPTION value="cse">&nbsp;计算机科学与工程学院</OPTION>
+                            <OPTION value="ruanjian">&nbsp;软件学院</OPTION>
+                            <OPTION value="tumu">&nbsp;土木学院</OPTION>
+                            <OPTION value="jiaotong">&nbsp;交通学院</OPTION>
+                            <OPTION value="oths">&nbsp;其他</OPTION>
                         </SELECT>
                         </DIV>
                     </TD>
@@ -70,7 +93,7 @@
                    
 
 
-
+<!--
                 <TR>
                     <TD><input hiddenid="iptIdCode" class="iptIdCode" name="idtyCode" type="text" placeholder="验证码" onblur="check_idtyCode()" onfocus="focus_idtyCode()"></TD>
                     <TD><IMG src="res/images/idtyimg.jpg"></TD>
@@ -78,7 +101,7 @@
                 <TR>
                     <TD><P class="Waringtxtsty" id="codeWarning" hidden>请输入验证码。</P></TD>
                 </TR>
-
+-->
              <!--   <TR>
                     <TD colspan="2" align="center">
                         <P class="Loginpromotion">一旦创建账户，即表明你同意 <span>步履不停</span> 的 <A href="privacy.html">隐私政策</A> 和 <A href="provision.html">使用条款</A></P>
@@ -86,9 +109,41 @@
                 </TR>-->
 
                 <TR>
-                    <TD colspan="2"><INPUT class="btnSubmit" type="submit" value="注册" onclick="submitForm()"></TD>
+                    <TD colspan="2"><INPUT class="btnSubmit" value="注册"  type="submit" onclick="submitForm()"></TD>
                 </TR>
+                <script type="text/javascript">
+        var eleList = document.getElementById("emailList")
+            , eleMail = document.getElementById("email")
+            , htmlListInit = '', arrEmailList = [];
+            
+        if (eleMail && eleList && (htmlListInit = eleList.innerHTML) !== '') {    
+            // 得到类似["qq.com", "163.com", "gmail.com", ...]的数据
+            arrEmailList = [].slice.call(eleList.getElementsByTagName("option")).map(function(option) {
+                return option.value.replace("*@", "");    
+            });
 
+            eleMail.fnListReplace = function() {
+                var arrValue = this.value.trim().split("@");
+                // 修复FireFox浏览器下无限input问题
+                // 如果值不完全匹配某option值，执行动态替换 
+                if (arrValue.length !== 2 || arrEmailList.indexOf(arrValue[1]) === -1) {
+                    eleList.innerHTML = htmlListInit.replace(/\*/g, arrValue[0]);
+                }        
+                return this;
+            };
+            // 绑定输入事件侦听
+            eleMail.addEventListener("input", function() {
+                this.fnListReplace.call(this);        
+            }, false);
+            
+            //  载入即匹配
+            eleMail.fnListReplace.call(eleMail).focus();
+        } else {
+            eleList = document.createElement("datalist");
+            eleList.innerHTML = '<p class=sorry>抱歉，当前浏览器不支持HTML5 datalist.</p>';    
+            eleMail.parentNode.appendChild(eleList);
+        }
+        </script>
         </DIV>
     </BODY>
 </HTML> 

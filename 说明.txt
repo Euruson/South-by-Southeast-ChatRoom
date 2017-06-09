@@ -1,0 +1,39 @@
+把用到的函数名说一下：
+切换用户和聊天室选择的是  changepage(flag)，其中flag值为1是选中聊天室，2是选中成员
+增加聊天室  addroomfun()
+选择聊天室  choseroom(roomid)，roomid房间的id
+
+还有增加聊天室和成员显示，聊天室显示我都做了一个实例在主页上，你可以看一下，不过这个是动态添加的就不说了.
+
+选择聊天室的话要传递聊天室id，我想的是通过函数参数传，也就是roomid参数，不知道你有没有其他好办法。
+
+动态添加的代码：
+增加聊天室按钮 不需要参数
+
+appendMessageContent="<li class='addroom' onclick='addroomfun()'>
++ &nbsp 创建新的聊天室</li>" ;
+$('#join').append(appendMessageContent);
+
+
+
+增加聊天室 其中要传三个参数：roomid，roomname，roomnum 房间id，房间名称，房间中人数
+
+appendMessageContent="<li class='clearfix' onclick='choseroom("+roomid+")'>
+<img src='/static/images/chatroom.png' width='50' height='50' alt='avatar' />
+<div class='about' style='margin-top:0px;'>
+<div class='name'>"+roomname+"</div>
+<div class='status' style='margin-top:8px;'>
+<image src='/static/images/num.png'>&nbsp"+roomnum+"
+</div>
+</div>
+</li>"
+
+$('#join').append(appendMessageContent);
+
+
+*************************补充*********************
+邮件那里需要只识别 东大邮箱
+注册的时候需要判断是否已经注册
+防sql注入攻击，密码hash
+
+
